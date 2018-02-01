@@ -1,401 +1,395 @@
 ﻿using System;
-using System.Runtime.Serialization.Formatters;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.Networking;
-using UnityEngine.Networking.Match;
 
 [Serializable]
 public class CanvasControl
 {
-	[SerializeField]
-	public Canvas prefab;
-	Canvas m_Canvas;
+    [SerializeField]
+    public Canvas prefab;
 
-	public Canvas canvas { get { return m_Canvas;} }
+    private Canvas m_Canvas;
 
-	public virtual void Show()
-	{
-		if (prefab == null)
-			return;
+    public Canvas canvas { get { return m_Canvas; } }
 
-		if (m_Canvas != null)
-			return;
+    public virtual void Show()
+    {
+        if (prefab == null)
+            return;
 
-		m_Canvas =  (Canvas)GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
-		GameObject.DontDestroyOnLoad(m_Canvas.gameObject);
-	}
+        if (m_Canvas != null)
+            return;
 
-	public void Hide()
-	{
-		if (m_Canvas == null)
-			return;
+        m_Canvas = (Canvas)GameObject.Instantiate(prefab, Vector3.zero, Quaternion.identity);
+        GameObject.DontDestroyOnLoad(m_Canvas.gameObject);
+    }
 
-		GameObject.Destroy(m_Canvas.gameObject);
-		m_Canvas = null;
-	}
+    public void Hide()
+    {
+        if (m_Canvas == null)
+            return;
 
-	public virtual void OnLevelWasLoaded()
-	{
-	}
+        GameObject.Destroy(m_Canvas.gameObject);
+        m_Canvas = null;
+    }
+
+    public virtual void OnLevelWasLoaded()
+    {
+    }
 }
 
 [Serializable]
 public class LobbyCanvasControl : CanvasControl
 {
-	public override void Show()
-	{
-		base.Show();
+    public override void Show()
+    {
+        base.Show();
 
-		var hooks = canvas.GetComponent<LobbyCanvasHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<LobbyCanvasHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnAddPlayerHook = OnGUIAddPlayer;
-	}
+        hooks.OnAddPlayerHook = OnGUIAddPlayer;
+    }
 
-	public void OnGUIAddPlayer()
-	{
-		GuiLobbyManager.s_Singleton.popupCanvas.Hide();
+    public void OnGUIAddPlayer()
+    {
+        GuiLobbyManager.s_Singleton.popupCanvas.Hide();
 
-		int id = NetworkClient.allClients[0].connection.playerControllers.Count;
-		ClientScene.AddPlayer((short)id);
-	}
+        int id = NetworkClient.allClients[0].connection.playerControllers.Count;
+        ClientScene.AddPlayer((short)id);
+    }
 
-	public void SetFocusToAddPlayerButton()
-	{
-		var hooks = canvas.GetComponent<LobbyCanvasHooks>();
-		if (hooks == null)
-			return;
+    public void SetFocusToAddPlayerButton()
+    {
+        var hooks = canvas.GetComponent<LobbyCanvasHooks>();
+        if (hooks == null)
+            return;
 
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 }
 
 [Serializable]
 public class OnlineCanvasControl : CanvasControl
 {
-	public void Show(string status)
-	{
-		base.Show();
-			
-		GuiLobbyManager.s_Singleton.offlineCanvas.Hide();
+    public void Show(string status)
+    {
+        base.Show();
 
-		var hooks = canvas.GetComponent<OnlineControlHooks>();
-		if (hooks == null)
-			return;
+        GuiLobbyManager.s_Singleton.offlineCanvas.Hide();
 
-		hooks.OnStopHook = OnGUIStop;
+        var hooks = canvas.GetComponent<OnlineControlHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.SetAddress(GuiLobbyManager.s_Singleton.networkAddress);
-		hooks.SetStatus(status);
+        hooks.OnStopHook = OnGUIStop;
 
-		GuiLobbyManager.s_Singleton.onlineStatus = status;
+        hooks.SetAddress(GuiLobbyManager.s_Singleton.networkAddress);
+        hooks.SetStatus(status);
 
-		EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        GuiLobbyManager.s_Singleton.onlineStatus = status;
 
-	public void OnGUIStop()
-	{
-		GuiLobbyManager.s_Singleton.popupCanvas.Hide();
-		GuiLobbyManager.s_Singleton.StopHost();
-	}
+        EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
+
+    public void OnGUIStop()
+    {
+        GuiLobbyManager.s_Singleton.popupCanvas.Hide();
+        GuiLobbyManager.s_Singleton.StopHost();
+    }
 }
 
 [Serializable]
 public class OfflineCanvasControl : CanvasControl
 {
-	public override void Show()
-	{
-		base.Show();
-		GuiLobbyManager.s_Singleton.onlineCanvas.Hide();
+    public override void Show()
+    {
+        base.Show();
+        GuiLobbyManager.s_Singleton.onlineCanvas.Hide();
 
-		var hooks = canvas.GetComponent<OfflineControlHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<OfflineControlHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnStartHostHook = OnGUIStartHost;
-		hooks.OnStartServerHook = OnGUIStartServer;
-		hooks.OnStartClientHook = OnGUIStartClient;
-		hooks.OnStartMMHook = OnGUIStartMatchMaker;
+        hooks.OnStartHostHook = OnGUIStartHost;
+        hooks.OnStartServerHook = OnGUIStartServer;
+        hooks.OnStartClientHook = OnGUIStartClient;
+        hooks.OnStartMMHook = OnGUIStartMatchMaker;
 
-		EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	public override void OnLevelWasLoaded()
-	{
-		if (canvas == null)
-			return;
+    public override void OnLevelWasLoaded()
+    {
+        if (canvas == null)
+            return;
 
-		var hooks = canvas.GetComponent<OfflineControlHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<OfflineControlHooks>();
+        if (hooks == null)
+            return;
 
-		EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	public void OnGUIStartHost()
-	{
-		GuiLobbyManager.s_Singleton.StartHost();
-		GuiLobbyManager.s_Singleton.onlineCanvas.Show("Host");
-	}
+    public void OnGUIStartHost()
+    {
+        GuiLobbyManager.s_Singleton.StartHost();
+        GuiLobbyManager.s_Singleton.onlineCanvas.Show("Host");
+    }
 
-	public void OnGUIStartServer()
-	{
-		GuiLobbyManager.s_Singleton.StartServer();
-		GuiLobbyManager.s_Singleton.onlineCanvas.Show("Server");
-	}
+    public void OnGUIStartServer()
+    {
+        GuiLobbyManager.s_Singleton.StartServer();
+        GuiLobbyManager.s_Singleton.onlineCanvas.Show("Server");
+    }
 
-	public void OnGUIStartClient()
-	{
-		var hooks = canvas.GetComponent<OfflineControlHooks>();
-		if (hooks == null)
-			return;
+    public void OnGUIStartClient()
+    {
+        var hooks = canvas.GetComponent<OfflineControlHooks>();
+        if (hooks == null)
+            return;
 
-		GuiLobbyManager.s_Singleton.networkAddress = hooks.GetAddress();
-		GuiLobbyManager.s_Singleton.StartClient();
-		GuiLobbyManager.s_Singleton.onlineCanvas.Show("Client");
-	}
+        GuiLobbyManager.s_Singleton.networkAddress = hooks.GetAddress();
+        GuiLobbyManager.s_Singleton.StartClient();
+        GuiLobbyManager.s_Singleton.onlineCanvas.Show("Client");
+    }
 
-	public void OnGUIStartMatchMaker()
-	{
-		Hide();
+    public void OnGUIStartMatchMaker()
+    {
+        Hide();
 
-		GuiLobbyManager.s_Singleton.StartMatchMaker();
-		GuiLobbyManager.s_Singleton.matchMakerCanvas.Show();
-	}
+        GuiLobbyManager.s_Singleton.StartMatchMaker();
+        GuiLobbyManager.s_Singleton.matchMakerCanvas.Show();
+    }
 }
 
 [Serializable]
 public class ConnectingCanvasControl : CanvasControl
 {
-	public void Show(string address)
-	{
-		base.Show();
-		
+    public void Show(string address)
+    {
+        base.Show();
 
-		var hooks = canvas.GetComponent<ConnectingCanvasHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<ConnectingCanvasHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnExitHook = OnGUICancelConnecting;
+        hooks.OnExitHook = OnGUICancelConnecting;
 
-		hooks.messagText.text = address;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        hooks.messagText.text = address;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	public void OnGUICancelConnecting()
-	{
-		Hide();
-		GuiLobbyManager.s_Singleton.StopHost();
-	}
+    public void OnGUICancelConnecting()
+    {
+        Hide();
+        GuiLobbyManager.s_Singleton.StopHost();
+    }
 }
 
 [Serializable]
 public class MatchMakerCanvasControl : CanvasControl
 {
-	public override void Show()
-	{
-		base.Show();
+    public override void Show()
+    {
+        base.Show();
 
-		var hooks = canvas.GetComponent<MatchMakerHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<MatchMakerHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnCreateGameHook = OnGUICreateMatchMakerGame;
-		hooks.OnJoinGameHook = OnGUIJoinMatchMakerGame;
-		hooks.OnExitHook = OnGUIExitMatchMaker;
+        hooks.OnCreateGameHook = OnGUICreateMatchMakerGame;
+        hooks.OnJoinGameHook = OnGUIJoinMatchMakerGame;
+        hooks.OnExitHook = OnGUIExitMatchMaker;
 
-		hooks.SetMMServer(GuiLobbyManager.s_Singleton.matchHost);
+        hooks.SetMMServer(GuiLobbyManager.s_Singleton.matchHost);
 
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	
-	public void OnGUICreateMatchMakerGame()
-	{
-		var hooks = canvas.GetComponent<MatchMakerHooks>();
-		if (hooks == null)
-			return;
+    public void OnGUICreateMatchMakerGame()
+    {
+        var hooks = canvas.GetComponent<MatchMakerHooks>();
+        if (hooks == null)
+            return;
 
-		GuiLobbyManager.s_Singleton.matchMaker.CreateMatch(
-			hooks.GetGameName(), 
-			(uint)GuiLobbyManager.s_Singleton.maxPlayers, 
-			true, 
-			"", 
-			GuiLobbyManager.s_Singleton.OnMatchCreate);
+        GuiLobbyManager.s_Singleton.matchMaker.CreateMatch(
+            hooks.GetGameName(),
+            (uint)GuiLobbyManager.s_Singleton.maxPlayers,
+            true,
+            "",
+            GuiLobbyManager.s_Singleton.OnMatchCreate);
 
-		GuiLobbyManager.s_Singleton.onlineStatus = "Host Match";
+        GuiLobbyManager.s_Singleton.onlineStatus = "Host Match";
 
-		Hide();
+        Hide();
 
-		var host = GuiLobbyManager.s_Singleton.matchMaker.baseUri.ToString();
-		GuiLobbyManager.s_Singleton.connectingCanvas.Show(host);
-	}
+        var host = GuiLobbyManager.s_Singleton.matchMaker.baseUri.ToString();
+        GuiLobbyManager.s_Singleton.connectingCanvas.Show(host);
+    }
 
-	public void OnGUIJoinMatchMakerGame()
-	{
-		Hide();
+    public void OnGUIJoinMatchMakerGame()
+    {
+        Hide();
 
-		GuiLobbyManager.s_Singleton.matchMaker.ListMatches(0, 6, "", OnGUIMatchList);
+        GuiLobbyManager.s_Singleton.matchMaker.ListMatches(0, 6, "", OnGUIMatchList);
 
-		var host = GuiLobbyManager.s_Singleton.matchMaker.baseUri.ToString();
-		GuiLobbyManager.s_Singleton.connectingCanvas.Show(host);
-	}
+        var host = GuiLobbyManager.s_Singleton.matchMaker.baseUri.ToString();
+        GuiLobbyManager.s_Singleton.connectingCanvas.Show(host);
+    }
 
-	void OnGUIMatchList(ListMatchResponse matchList)
-	{
-		GuiLobbyManager.s_Singleton.connectingCanvas.Hide();
+    private void OnGUIMatchList(ListMatchResponse matchList)
+    {
+        GuiLobbyManager.s_Singleton.connectingCanvas.Hide();
 
-		if (matchList.success)
-		{
-			GuiLobbyManager.s_Singleton.joinMatchCanvas.Show(matchList);
-		}
-		else if (matchList.matches.Count == 0)
-		{
-			Debug.LogWarning("No Matched found.");
-			Show();
-		}
-		else
-		{
-			Debug.LogError("Error finding matches");
-			Show();
-		}
-	}
+        if (matchList.success)
+        {
+            GuiLobbyManager.s_Singleton.joinMatchCanvas.Show(matchList);
+        }
+        else if (matchList.matches.Count == 0)
+        {
+            Debug.LogWarning("No Matched found.");
+            Show();
+        }
+        else
+        {
+            Debug.LogError("Error finding matches");
+            Show();
+        }
+    }
 
-	public void OnGUIExitMatchMaker()
-	{
-		GuiLobbyManager.s_Singleton.StopMatchMaker();
-		Hide();
-		GuiLobbyManager.s_Singleton.offlineCanvas.Show();
-	}
+    public void OnGUIExitMatchMaker()
+    {
+        GuiLobbyManager.s_Singleton.StopMatchMaker();
+        Hide();
+        GuiLobbyManager.s_Singleton.offlineCanvas.Show();
+    }
 }
 
 [Serializable]
 public class JoinMatchCanvasControl : CanvasControl
 {
-	public void Show(ListMatchResponse matchList)
-	{
-		base.Show();
+    public void Show(ListMatchResponse matchList)
+    {
+        base.Show();
 
-		GuiLobbyManager.s_Singleton.matches = matchList.matches;
+        GuiLobbyManager.s_Singleton.matches = matchList.matches;
 
-		var hooks = canvas.GetComponent<JoinMatchHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<JoinMatchHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnReturnToMMHook = OnGUIReturnToMatchMaker;
-		hooks.OnGameHook = OnGUIJoin;
+        hooks.OnReturnToMMHook = OnGUIReturnToMatchMaker;
+        hooks.OnGameHook = OnGUIJoin;
 
-		for (int i = 0; i < 6; i++)
-		{
-			hooks.SetMatchName(i, "");
-		}
+        for (int i = 0; i < 6; i++)
+        {
+            hooks.SetMatchName(i, "");
+        }
 
-		for (int i = 0; i < matchList.matches.Count; i++)
-		{
-			var match = matchList.matches[i];
-			hooks.SetMatchName(i, match.name);
-		}
+        for (int i = 0; i < matchList.matches.Count; i++)
+        {
+            var match = matchList.matches[i];
+            hooks.SetMatchName(i, match.name);
+        }
 
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	public void OnGUIReturnToMatchMaker()
-	{
-		Hide();
-		GuiLobbyManager.s_Singleton.matchMakerCanvas.Show();
-	}
+    public void OnGUIReturnToMatchMaker()
+    {
+        Hide();
+        GuiLobbyManager.s_Singleton.matchMakerCanvas.Show();
+    }
 
-	public void OnGUIJoin(int index)
-	{
-	
-		if (index < 0 || index >= GuiLobbyManager.s_Singleton.matches.Count)
-			return;
+    public void OnGUIJoin(int index)
+    {
+        if (index < 0 || index >= GuiLobbyManager.s_Singleton.matches.Count)
+            return;
 
-		GuiLobbyManager.s_Singleton.onlineStatus = "Joined Match";
+        GuiLobbyManager.s_Singleton.onlineStatus = "Joined Match";
 
-		GuiLobbyManager.s_Singleton.matchMaker.JoinMatch(
-			GuiLobbyManager.s_Singleton.matches[index].networkId, 
-			"", 
-			GuiLobbyManager.s_Singleton.OnMatchJoined);
+        GuiLobbyManager.s_Singleton.matchMaker.JoinMatch(
+            GuiLobbyManager.s_Singleton.matches[index].networkId,
+            "",
+            GuiLobbyManager.s_Singleton.OnMatchJoined);
 
-		Hide();
-	}
+        Hide();
+    }
 }
 
 [Serializable]
 public class ExitToLobbyCanvasControl : CanvasControl
 {
-	public override void Show()
-	{
-		base.Show();
-	
-		var hooks = canvas.GetComponent<ExitToLobbyHooks>();
-		if (hooks == null)
-			return;
+    public override void Show()
+    {
+        base.Show();
 
-		hooks.OnExitHook = OnGUIExitToLobby;
+        var hooks = canvas.GetComponent<ExitToLobbyHooks>();
+        if (hooks == null)
+            return;
 
-		EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        hooks.OnExitHook = OnGUIExitToLobby;
 
-	public override void OnLevelWasLoaded()
-	{
-		if (canvas == null)
-			return;
+        EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-		var hooks = canvas.GetComponent<ExitToLobbyHooks>();
-		if (hooks == null)
-			return;
+    public override void OnLevelWasLoaded()
+    {
+        if (canvas == null)
+            return;
 
-		EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        var hooks = canvas.GetComponent<ExitToLobbyHooks>();
+        if (hooks == null)
+            return;
 
-	public void OnGUIExitToLobby()
-	{
-		foreach (var player in GuiLobbyManager.s_Singleton.lobbySlots)
-		{
-			if (player != null)
-			{
-				var playerLobby = player as PlayerLobby;
-				if (playerLobby)
-				{
-					playerLobby.CmdExitToLobby();
-				}
-			}
-		}
-	}
+        EventSystem.current.firstSelectedGameObject = hooks.firstButton.gameObject;
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
+
+    public void OnGUIExitToLobby()
+    {
+        foreach (var player in GuiLobbyManager.s_Singleton.lobbySlots)
+        {
+            if (player != null)
+            {
+                var playerLobby = player as PlayerLobby;
+                if (playerLobby)
+                {
+                    playerLobby.CmdExitToLobby();
+                }
+            }
+        }
+    }
 }
 
 [Serializable]
 public class PopupCanvasControl : CanvasControl
 {
-	public void Show(string title, string message)
-	{
-		base.Show();
+    public void Show(string title, string message)
+    {
+        base.Show();
 
-		var hooks = canvas.GetComponent<PopupMessageHooks>();
-		if (hooks == null)
-			return;
+        var hooks = canvas.GetComponent<PopupMessageHooks>();
+        if (hooks == null)
+            return;
 
-		hooks.OnExitHook = OnGUIExitPopup;
+        hooks.OnExitHook = OnGUIExitPopup;
 
-		hooks.titleText.text = title;
-		hooks.messagText.text = message;
+        hooks.titleText.text = title;
+        hooks.messagText.text = message;
 
-		EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
-	}
+        EventSystem.current.SetSelectedGameObject(hooks.firstButton.gameObject);
+    }
 
-	public void OnGUIExitPopup()
-	{
-		Hide();
-	}
+    public void OnGUIExitPopup()
+    {
+        Hide();
+    }
 }
-

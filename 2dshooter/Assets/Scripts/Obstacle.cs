@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 //	[SyncScale]
-public class Obstacle : MonoBehaviour {
-
-	// Use this for initialization
-	void Start ()
-	{
-	}	
+public class Obstacle : MonoBehaviour
+{
+    // Use this for initialization
+    private void Start()
+    {
+    }
 }

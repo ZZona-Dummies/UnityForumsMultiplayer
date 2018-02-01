@@ -3,47 +3,47 @@ using UnityEngine.Networking;
 
 public class ColorControl : NetworkBehaviour
 {
-	static Color[] colors = new Color[] { Color.white, Color.magenta, Color.red, Color.cyan, Color.blue, Color.green, Color.yellow };
+    private static Color[] colors = new Color[] { Color.white, Color.magenta, Color.red, Color.cyan, Color.blue, Color.green, Color.yellow };
 
-	[SyncVar(hook="OnMyColor")]
-	public Color myColor = Color.white;
+    [SyncVar(hook = "OnMyColor")]
+    public Color myColor = Color.white;
 
-	NetworkLobbyPlayer lobbyPlayer;
-	PlayerLobby playerUI;
+    private NetworkLobbyPlayer lobbyPlayer;
+    private PlayerLobby playerUI;
 
-	void Awake()
-	{
-		lobbyPlayer = GetComponent<NetworkLobbyPlayer>();
-		playerUI = GetComponent<PlayerLobby>();
-	}
+    private void Awake()
+    {
+        lobbyPlayer = GetComponent<NetworkLobbyPlayer>();
+        playerUI = GetComponent<PlayerLobby>();
+    }
 
-	[Command]
-	void CmdSetMyColor(Color col)
-	{
-		// cant change color after turning ready
-		if (lobbyPlayer.readyToBegin)
-		{
-			return;
-		}
+    [Command]
+    private void CmdSetMyColor(Color col)
+    {
+        // cant change color after turning ready
+        if (lobbyPlayer.readyToBegin)
+        {
+            return;
+        }
 
-		myColor = col;
-	}
+        myColor = col;
+    }
 
-	public void ClientChangeColor()
-	{
-		var newCol = colors[Random.Range(0,colors.Length)];
-		CmdSetMyColor(newCol);
-	}
+    public void ClientChangeColor()
+    {
+        var newCol = colors[Random.Range(0, colors.Length)];
+        CmdSetMyColor(newCol);
+    }
 
-	void OnMyColor(Color newColor)
-	{
-		myColor = newColor;
-		playerUI.SetColor(newColor);
-	}
+    private void OnMyColor(Color newColor)
+    {
+        myColor = newColor;
+        playerUI.SetColor(newColor);
+    }
 
-	void Update()
-	{
-		if (!isLocalPlayer)
-			return;
-	}
+    private void Update()
+    {
+        if (!isLocalPlayer)
+            return;
+    }
 }

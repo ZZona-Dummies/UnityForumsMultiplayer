@@ -1,34 +1,31 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
 
-public class MenuControl : MonoBehaviour {
+public class MenuControl : MonoBehaviour
+{
+    public void StartLocalGame()
+    {
+        NetworkManager.singleton.StartHost();
+    }
 
-	public void StartLocalGame()
-	{
-		NetworkManager.singleton.StartHost();
-	}
-	
-	public void JoinLocalGame()
-	{
-		if (hostNameInput.text != "Hostname")
-		{
-			NetworkManager.singleton.networkAddress = hostNameInput.text;
-		}	
-		NetworkManager.singleton.StartClient();
-	}
-	
-	public void StartMatchMaker()
-	{
-		NetworkManager.singleton.StartMatchMaker();
-	}
-	
-	public UnityEngine.UI.Text hostNameInput;
+    public void JoinLocalGame()
+    {
+        if (hostNameInput.text != "Hostname")
+        {
+            NetworkManager.singleton.networkAddress = hostNameInput.text;
+        }
+        NetworkManager.singleton.StartClient();
+    }
 
+    public void StartMatchMaker()
+    {
+        NetworkManager.singleton.StartMatchMaker();
+    }
 
-	void Start()
-	{
-		hostNameInput.text = NetworkManager.singleton.networkAddress;
-	}
-	
+    public UnityEngine.UI.Text hostNameInput;
+
+    private void Start()
+    {
+        hostNameInput.text = NetworkManager.singleton.networkAddress;
+    }
 }
